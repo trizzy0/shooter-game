@@ -1,0 +1,106 @@
+import pygame
+
+# Initialize Pygame
+pygame.init()
+
+# Set up the screen
+screen = pygame.display.set_mode((800, 600))
+pygame.display.set_caption("Shooting Game")
+
+# Set up the clock
+clock = pygame.time.Clock()
+
+# Load images
+player_img = pygame.image.load("player.png")
+enemy_img = pygame.image.load("enemy.png")
+bullet_img = pygame.image.load("bullet.png")
+
+# Set up the player
+player_x = 400
+player_y = 500
+player_speed = 5
+
+# Set up the enemy
+enemy_x = 400
+enemy_y = 50
+enemy_speed = 2
+
+# Set up the bullet
+bullet_x = 0
+bullet_y = 0
+bullet_speed = 10
+bullet_state = "ready"
+
+# Set up the score
+score = 0
+
+# Define functions
+def player(x, y):
+    screen.blit(player_img, (x, y))
+
+def enemy(x, y):
+    screen.blit(enemy_img, (x, y))
+
+def fire_bullet(x, y):
+    global bullet_state
+    bullet_state = "fire"
+    screen.blit(bullet_img, (x + 16, y + 10))
+
+def is_collision(enemy_x, enemy_y, bullet_x, bullet_y):
+    distance = ((enemy_x - bullet_x)**2 + (enemy_y - bullet_y)**2)**0.5
+    if distance < 27:
+        return True
+    else:
+        return False
+
+# Game loop
+running = True
+while running:
+
+    # Handle events
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_LEFT:
+                player_x -= player_speed
+            elif event.key == pygame.K_RIGHT:
+                player_x += player_speed
+            elif event.key == pygame.K_SPACE:
+                if bullet_state == "ready":
+                    bullet_x = player_x
+                    bullet_y = player_y
+                    fire_bullet(bullet_x, bullet_y)
+
+    # Move the enemy
+    enemy_x += enemy_speed
+    if enemy_x <= 0 or enemy_x >= 736:
+        enemy_speed = -enemy_speed
+        enemy_y += 64
+
+    # Move the bullet
+    if bullet_state == "fire":
+        bullet_y -= bullet_speed
+        if bullet_y <= 0:
+            bullet_state = "ready"
+
+    # Check for collisions
+    if is_collision(enemy_x, enemy_y, bullet_x, bullet_y):
+        bullet_state = "ready"
+        score += 1
+        enemy_x = 400
+        enemy_y = 50
+
+    # Draw everything on the screen
+    screen.fill((0, 0, 0))
+    player(player_x, player_y)
+    enemy(enemy_x, enemy_y)
+    if bullet_state == "fire":
+        fire_bullet(bullet_x, bullet_y)
+    pygame.display.update()
+
+    # Set the clock speed
+    clock.tick(60)
+
+# Quit Pygame
+pygame.quit()
